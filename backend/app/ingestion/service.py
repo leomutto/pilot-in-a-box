@@ -14,7 +14,6 @@ from .validators.contract import validate_contract
 from .normalizers.timestamps import normalize_timestamps
 from .normalizers.numbers import normalize_numbers
 from .normalizers.strings import normalize_strings
-from .normalizers.snake_case import normalize_keys_snake_case
 from .normalizers.units import normalize_units
 
 # BLACKBOX CLIENT
@@ -38,7 +37,7 @@ def log_event(db: Session, request_id: int, event_type: str, metadata: dict = No
     log = LogModel(
         request_id=request_id,
         event_type=event_type,
-        metadata=metadata or {}
+        log_metadata=metadata or {}
     )
     db.add(log)
     db.commit()
@@ -98,10 +97,7 @@ def normalize_request_payload(json_request: JSONRequest):
     # 3. Normalizar strings
     payload = normalize_strings(payload)
 
-    # 4. Normalizar claves a snake_case
-    payload = normalize_keys_snake_case(payload)
-
-    # 5. Normalizar unidades
+    # 4. Normalizar unidades
     payload = normalize_units(payload)
 
     return payload
@@ -197,4 +193,4 @@ def get_request_with_response(request_id: int, db: Session):
 def get_request_logs(request_id: int, db: Session):
     logs = db.query(LogModel).filter(LogModel.request_id == request_id).all()
 
-    return [{"event": l.event_type, "timestamp": l.timestamp, "metadata": l.metadata} for l in logs]
+    return [{"event": l.event_type, "timestamp": l.timestamp, "metadata": l.log_metadata} for l in logs]

@@ -1,30 +1,30 @@
 from fastapi import HTTPException
 import math
 
-
 def normalize_number(value):
     """
     - Convierte strings numéricos a float/int
-    - Redondea floats a 3 decimales
     - Rechaza NaN, inf, -inf
+    - NO redondea (MASS requiere preservar precisión)
     """
+    # Convertir strings numéricos
     if isinstance(value, str):
         try:
             value = float(value)
         except ValueError:
             raise HTTPException(status_code=400, detail=f"Valor numérico inválido: {value}")
 
+    # Validar floats
     if isinstance(value, float):
         if math.isnan(value) or math.isinf(value):
             raise HTTPException(status_code=400, detail=f"Valor numérico inválido: {value}")
-        return round(value, 3)
 
     return value
 
 
 def normalize_numbers(payload: dict) -> dict:
     """
-    Normaliza todos los números del JSON_request.
+    Normaliza todos los números del JSON_request sin alterar precisión.
     """
     signals = payload["request"]["signals"]
 

@@ -1,8 +1,7 @@
 from fastapi import HTTPException
 
-
-VALID_UNITS = ["kW", "kWh"]
-
+# MASS ENTERPRISE v1.1 usa "metric" como unidad de sistema
+VALID_UNITS = ["metric"]
 
 def normalize_units(payload: dict) -> dict:
     """

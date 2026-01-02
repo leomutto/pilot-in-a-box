@@ -6,11 +6,10 @@ services:
     container_name: pib-backend
     ports:
       - "8000:8000"
-    volumes:
-      - ./backend:/app
     env_file:
       - ./backend/.env
-    command: uvicorn main:app --host 0.0.0.0 --port 8000 --reload
+    # No sobrescribir el código del contenedor
+    # No sobrescribir el comando del Dockerfile
 
   frontend:
     build: ./frontend

@@ -1,11 +1,16 @@
 from fastapi import HTTPException
 
-
+# MASS ENTERPRISE v1.1 — Valores válidos según tu contrato
 SUPPORTED_SCHEMA_VERSIONS = ["1.1"]
-SUPPORTED_UNITS = ["kW", "kWh"]
-SUPPORTED_CURRENCIES = ["USD", "EUR"]
-SUPPORTED_CLASSIFICATIONS = ["internal", "restricted"]
 
+# MASS usa "metric" como unidad de sistema
+SUPPORTED_UNITS = ["metric"]
+
+# MASS usa USD y EUR (esto ya estaba bien)
+SUPPORTED_CURRENCIES = ["USD", "EUR"]
+
+# MASS usa "INTERNAL" como clasificación
+SUPPORTED_CLASSIFICATIONS = ["INTERNAL", "internal"]
 
 def validate_contract(payload: dict):
     """

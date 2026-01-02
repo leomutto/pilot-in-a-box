@@ -1,5 +1,4 @@
 from fastapi import APIRouter, HTTPException
-from sqlalchemy.orm import Session
 
 from .schemas_request import JSONRequest
 from .schemas_response import JSONResponse, JSONErrorResponse
@@ -11,9 +10,6 @@ from .service import (
     get_request_with_response,
     get_request_logs
 )
-
-from ..database import get_db  # Ajustar según tu proyecto
-
 
 router = APIRouter(prefix="/v1/json-request", tags=["json-request"])
 
@@ -41,8 +37,8 @@ def normalize(json_request: JSONRequest):
 # ============================================================
 
 @router.post("/save")
-def save(json_request: JSONRequest, db: Session = get_db()):
-    return save_request_payload(json_request, db)
+def save(json_request: JSONRequest):
+    return save_request_payload(json_request)
 
 
 # ============================================================
@@ -50,8 +46,8 @@ def save(json_request: JSONRequest, db: Session = get_db()):
 # ============================================================
 
 @router.post("/{request_id}/send")
-def send(request_id: int, db: Session = get_db()):
-    return send_request_to_blackbox(request_id, db)
+def send(request_id: int):
+    return send_request_to_blackbox(request_id)
 
 
 # ============================================================
@@ -59,8 +55,8 @@ def send(request_id: int, db: Session = get_db()):
 # ============================================================
 
 @router.get("/{request_id}")
-def get_request(request_id: int, db: Session = get_db()):
-    return get_request_with_response(request_id, db)
+def get_request(request_id: int):
+    return get_request_with_response(request_id)
 
 
 # ============================================================
@@ -68,5 +64,5 @@ def get_request(request_id: int, db: Session = get_db()):
 # ============================================================
 
 @router.get("/{request_id}/logs")
-def get_logs(request_id: int, db: Session = get_db()):
-    return get_request_logs(request_id, db)
+def get_logs(request_id: int):
+    return get_request_logs(request_id)

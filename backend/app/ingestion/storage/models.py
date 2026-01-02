@@ -102,7 +102,7 @@ class LogModel(Base):
     timestamp = Column(DateTime, default=datetime.utcnow)
 
     # Metadata adicional del evento
-    metadata = Column(JSONB, nullable=True)
+    log_metadata = Column(JSONB, nullable=True)
 
     # Relación inversa
     request = relationship("RequestModel", back_populates="logs")
