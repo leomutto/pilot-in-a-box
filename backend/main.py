@@ -5,7 +5,7 @@ from routers.items import router as items_router
 from routers.auth import router as auth_router
 
 # Importar configuración de OpenTelemetry
-from app.otel_config import setup_otel
+from otel_config import setup_otel
 
 app = FastAPI(
     title=settings.PROJECT_NAME,
