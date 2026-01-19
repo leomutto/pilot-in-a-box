@@ -11,3 +11,11 @@ passlib[argon2]
 argon2-cffi
 email-validator
 requests==2.31.0
+
+# --- OpenTelemetry ---
+opentelemetry-api
+opentelemetry-sdk
+opentelemetry-exporter-otlp
+opentelemetry-exporter-otlp-proto-grpc
+opentelemetry-instrumentation-fastapi
+opentelemetry-instrumentation-requests
