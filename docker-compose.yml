@@ -8,8 +8,9 @@ services:
       - "8000:8000"
     env_file:
       - ./backend/.env
-    # No sobrescribir el código del contenedor
-    # No sobrescribir el comando del Dockerfile
+    depends_on:
+      - db
+      - otel-collector
 
   frontend:
     build: ./frontend
@@ -23,6 +24,8 @@ services:
     environment:
       - BACKEND_URL=http://pib-backend:8000
     command: npm run dev
+    depends_on:
+      - backend
 
   db:
     image: postgres:16
@@ -36,6 +39,17 @@ services:
       - "5432:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
+
+  otel-collector:
+    image: otel/opentelemetry-collector:latest
+    container_name: pib-otel-collector
+    command: ["--config=/etc/otel-collector-config.yaml"]
+    volumes:
+      - ./otel-collector-config.yaml:/etc/otel-collector-config.yaml
+    ports:
+      - "4317:4317"   # OTLP gRPC
+      - "4318:4318"   # OTLP HTTP
+    restart: unless-stopped
 
 volumes:
   postgres_data:
