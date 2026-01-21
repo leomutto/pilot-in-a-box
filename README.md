@@ -1,18 +1,19 @@
-# 📘 **README.md — Pilot in a Box (MASS v1.1)**
+# 📘 **README.md — Pilot in a Box (MASS Simple)**
 
 ## 🚀 Overview
 
-**Pilot in a Box** es una implementación completa del flujo MASS Enterprise v1.1, diseñada para demostrar un pipeline de ingesta, validación, normalización y procesamiento de señales energéticas, térmicas, de cooling y workload en un entorno reproducible basado en Docker.
+**Pilot in a Box — MASS Simple** es una versión minimalista y completamente reconstruida del backend MASS, diseñada para servir como base limpia, reproducible y extensible para futuros desarrollos.
 
-El proyecto incluye:
+Este proyecto **NO implementa MASS Enterprise v1.1**, ni pipelines de normalización, ni validadores complejos.  
+En su lugar, ofrece:
 
-- **Backend FastAPI** alineado con MASS v1.1  
-- **Frontend Next.js** para enviar requests MASS  
-- **Pipeline de normalización** modular y extensible  
-- **Validación estricta del contrato MASS**  
-- **Infraestructura reproducible con Docker Compose**  
+- Un backend FastAPI minimalista  
+- Un modelo único: `MassRequest`  
+- Persistencia con SQLAlchemy + Alembic  
+- Infraestructura reproducible con Docker Compose  
+- Un punto de partida sólido para construir MASS simple paso a paso  
 
-Este repositorio sirve como base para pilotos, PoCs y despliegues iniciales de MASS.
+Este repositorio fue reseteado y limpiado para eliminar drift, código legacy y migraciones antiguas.
 
 ---
 
@@ -22,25 +23,32 @@ Este repositorio sirve como base para pilotos, PoCs y despliegues iniciales de M
 pilot-in-a-box/
 │
 ├── backend/
-│   ├── app/
-│   │   ├── ingestion/
-│   │   │   ├── normalizers/        # Normalizadores MASS v1.1
-│   │   │   ├── validators/         # Validación del contrato MASS
-│   │   │   ├── pipelines/          # Pipeline de ingesta
-│   │   │   ├── storage/            # Modelos de persistencia
-│   │   │   ├── utils/              # Utilidades (tracing, tracking)
-│   │   │   ├── routers.py          # Endpoints de ingesta
-│   │   │   ├── service.py          # Lógica de negocio
-│   │   │   ├── schemas_request.py  # Modelo Pydantic MASS v1.1
-│   │   ├── main.py                 # Punto de entrada FastAPI
-│   ├── Dockerfile
-│
-├── frontend/
-│   ├── app/
-│   │   ├── ingestion/page.tsx      # UI para enviar requests MASS
+│   ├── db/
+│   │   ├── base.py              # Declarative Base
+│   │   ├── session.py           # SessionLocal + engine
+│   │   └── __init__.py
+│   │
+│   ├── models/
+│   │   ├── mass.py              # Modelo MassRequest
+│   │   └── __init__.py
+│   │
+│   ├── migrations/
+│   │   ├── env.py               # Configuración Alembic
+│   │   └── versions/
+│   │       └── 1facca6dc8e8_create_mass_requests_table.py
+│   │
 │   ├── services/
-│       ├── ingestionApi.ts         # Cliente HTTP hacia el backend
+│   │   └── mass_service.py      # Lógica de negocio MASS simple
+│   │
+│   ├── core/
+│   │   └── validators/
+│   │       └── mass_validator.py
+│   │
+│   ├── main.py                  # Punto de entrada FastAPI
 │   ├── Dockerfile
+│   └── .gitignore
+│
+├── frontend/                    # (Pendiente de actualización)
 │
 ├── docker-compose.yml
 └── README.md
@@ -48,52 +56,39 @@ pilot-in-a-box/
 
 ---
 
-## 📡 Endpoints Principales
+## 📡 Endpoints (MASS Simple)
 
-### `POST /v1/json-request/validate`
-Valida que el request cumpla con el contrato MASS v1.1.
+Los endpoints se encuentran en desarrollo.  
+El objetivo es implementar:
 
-### `POST /v1/json-request/normalize`
-Normaliza el payload MASS aplicando:
+### `POST /mass-requests/`
+Crea un nuevo request MASS simple.
 
-- conversión de unidades  
-- limpieza de strings  
-- normalización de números  
-- estandarización de timestamps  
+### `GET /mass-requests/{id}`
+Obtiene un request por ID.
 
-### `POST /v1/json-request/save`
-Guarda el request normalizado en la base de datos.
+### `GET /mass-requests/`
+Lista requests almacenados.
 
-### `POST /v1/json-request/send`
-Envía el request a la blackbox (motor de recomendación).
+### `DELETE /mass-requests/{id}`
+Elimina un request (soft delete opcional).
 
-### `GET /v1/json-request/{id}`
-Recupera un request previamente guardado.
-
-### `GET /v1/json-request/{id}/logs`
-Devuelve logs asociados al procesamiento.
+### `PATCH /mass-requests/{id}/status`
+Actualiza el estado del request.
 
 ---
 
-## 🔄 Flujo MASS v1.1 Implementado
+## 🗄️ Modelo Actual
 
-```
-┌──────────────┐
-│   validate   │  → Validación estricta del contrato MASS
-└───────┬──────┘
-        │
-┌───────▼──────┐
-│   normalize  │  → Limpieza, conversión y estandarización
-└───────┬──────┘
-        │
-┌───────▼──────┐
-│     save     │  → Persistencia en base de datos
-└───────┬──────┘
-        │
-┌───────▼──────┐
-│     send     │  → Envío a motor de recomendación
-└──────────────┘
-```
+### `MassRequest`
+
+Campos:
+
+- `id` (int, PK)
+- `payload` (JSON)
+- `status` (str: pending, processing, done)
+- `created_at` (datetime)
+- `updated_at` (datetime)
 
 ---
 
@@ -115,8 +110,7 @@ docker compose up --build
 Esto inicia:
 
 - Backend FastAPI en `http://localhost:8000`
-- Frontend Next.js en `http://localhost:3000`
-- Base de datos (si aplica)
+- Base de datos Postgres en `localhost:5432`
 
 ### 3. Acceder a Swagger
 
@@ -126,54 +120,44 @@ http://localhost:8000/docs
 
 ---
 
-## 🧪 Probar el flujo MASS
+## 🧪 Estado Actual del Proyecto
 
-### 1. Enviar un request desde el frontend
-
-```
-http://localhost:3000/ingestion
-```
-
-### 2. Probar desde Swagger
-
-- `/validate`
-- `/normalize`
-- `/save`
-- `/send`
-
-### 3. Ver logs y requests guardados
-
-```
-GET /v1/json-request/{id}
-GET /v1/json-request/{id}/logs
-```
+- Backend MASS simple reconstruido desde cero  
+- Migración inicial aplicada  
+- Base de datos limpia y sincronizada  
+- Código legacy eliminado  
+- `.gitignore` actualizado  
+- Estructura estable y sin drift  
 
 ---
 
 ## 📦 Tecnologías Utilizadas
 
-- **FastAPI**  
-- **Pydantic**  
-- **Next.js 14**  
-- **TypeScript**  
-- **Docker & Docker Compose**  
-- **Python 3.11**  
+- **FastAPI**
+- **SQLAlchemy**
+- **Alembic**
+- **Pydantic**
+- **Docker & Docker Compose**
+- **Python 3.11**
 
 ---
 
-## 🧭 Roadmap
+## 🧭 Roadmap MASS Simple
 
-- [ ] Implementar `/save` con persistencia completa  
-- [ ] Implementar `/send` con integración real a blackbox  
-- [ ] Añadir pruebas unitarias para normalizadores  
-- [ ] Añadir pruebas de integración para el pipeline  
-- [ ] Añadir métricas y observabilidad  
-- [ ] Añadir autenticación opcional  
+- [ ] Implementar POST `/mass-requests/`
+- [ ] Implementar GET `/mass-requests/{id}`
+- [ ] Implementar GET `/mass-requests/`
+- [ ] Implementar DELETE `/mass-requests/{id}`
+- [ ] Implementar actualización de estado
+- [ ] Añadir pruebas unitarias
+- [ ] Añadir autenticación opcional
+- [ ] Integrar frontend minimalista
 
 ---
 
 ## 👤 Autor
 
 **Leonardo Mutto**  
-Ingeniero especializado en arquitectura limpia, reproducibilidad y pipelines de ingesta.
+Arquitectura limpia, reproducibilidad y diseño de pipelines minimalistas.
 
+---
