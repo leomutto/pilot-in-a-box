@@ -1,7 +1,8 @@
 from sqlalchemy.orm import Session
-from app.models.mass import MassRequest
-from app.core.validators.mass_validator import MassValidator
-from app.schemas.mass import (
+
+from backend.models.mass import MassRequest
+from backend.core.validators.mass_validator import MassValidator
+from backend.schemas.mass import (
     MassPayload,
     MassValidationResponse,
     MassSaveResponse,

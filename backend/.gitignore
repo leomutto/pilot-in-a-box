@@ -1,0 +1,19 @@
+# Python cache
+__pycache__/
+*.pyc
+*.pyo
+
+# Virtual environments
+venv/
+.env
+.env.*
+
+# Alembic cache
+migrations/versions/__pycache__/
+migrations/__pycache__/
+
+# Local configs
+*.sqlite3
+
+# Logs
+*.log

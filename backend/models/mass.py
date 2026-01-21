@@ -1,5 +1,5 @@
 from sqlalchemy import Column, Integer, JSON, DateTime, func
-from app.db.base import Base
+from backend.db.base import Base
 
 
 class MassRequest(Base):
