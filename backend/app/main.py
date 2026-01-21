@@ -1,7 +1,7 @@
 from fastapi import FastAPI
-from app.ingestion.routers import router as ingestion_router
+from backend.api.routes import mass
 
 app = FastAPI()
 
-# Registrar router de ingestion
-app.include_router(ingestion_router)
+# Registrar router MASS simple
+app.include_router(mass.router)
