@@ -1,9 +1,18 @@
-from passlib.context import CryptContext
+from sqlalchemy.orm import Session
+from backend.models.user import User
+from backend.core.security import verify_password, create_access_token
 
-pwd_context = CryptContext(schemes=["argon2"], deprecated="auto")
+def authenticate_user(db: Session, email: str, password: str):
+    user = db.query(User).filter(User.email == email).first()
+    if not user:
+        return None
+    if not verify_password(password, user.hashed_password):
+        return None
+    return user
 
-def hash_password(password: str) -> str:
-    return pwd_context.hash(password)
-
-def verify_password(plain: str, hashed: str) -> bool:
-    return pwd_context.verify(plain, hashed)
+def login(db: Session, email: str, password: str):
+    user = authenticate_user(db, email, password)
+    if not user:
+        return None
+    token = create_access_token({"sub": user.email})
+    return token

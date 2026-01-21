@@ -2,41 +2,67 @@ from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 
 from backend.db.session import get_db
-from backend.services.mass_service import MassService
-from backend.schemas.mass import (
-    MassPayload,
-    MassValidationResponse,
-    MassSaveResponse,
-    MassSendResponse,
-    MassLogEntry
-)
+from backend.models.mass_request import MassRequest
+from backend.dependencies.dependencies import get_current_user
 
-router = APIRouter(prefix="/mass", tags=["MASS"])
+router = APIRouter(prefix="/mass-requests", tags=["mass"])
 
 
-@router.post("/validate", response_model=MassValidationResponse)
-def validate_mass(payload: MassPayload):
-    result = MassService.validate(payload.dict())
-    return result
+# ---------------------------------------------------------
+# LISTAR MASS REQUESTS
+# ---------------------------------------------------------
+@router.get("/")
+def list_mass_requests(
+    db: Session = Depends(get_db),
+    user=Depends(get_current_user)
+):
+    return db.query(MassRequest).all()
 
 
-@router.post("/save", response_model=MassSaveResponse)
-def save_mass(payload: MassPayload, db: Session = Depends(get_db)):
-    result = MassService.save(db, payload.dict())
-    return result
+# ---------------------------------------------------------
+# OBTENER MASS REQUEST POR ID
+# ---------------------------------------------------------
+@router.get("/{request_id}")
+def get_mass_request(
+    request_id: int,
+    db: Session = Depends(get_db),
+    user=Depends(get_current_user)
+):
+    req = db.query(MassRequest).filter(MassRequest.id == request_id).first()
+    if not req:
+        raise HTTPException(status_code=404, detail="Mass request not found")
+    return req
 
 
-@router.post("/send", response_model=MassSendResponse)
-def send_mass(id: int, db: Session = Depends(get_db)):
-    result = MassService.send(db, id)
-    return result
+# ---------------------------------------------------------
+# CREAR MASS REQUEST
+# ---------------------------------------------------------
+@router.post("/")
+def create_mass_request(
+    payload: dict,
+    db: Session = Depends(get_db),
+    user=Depends(get_current_user)
+):
+    new_req = MassRequest(**payload)
+    db.add(new_req)
+    db.commit()
+    db.refresh(new_req)
+    return new_req
 
 
-@router.get("/{mass_id}/logs", response_model=MassLogEntry)
-def get_mass_logs(mass_id: int, db: Session = Depends(get_db)):
-    result = MassService.get_logs(db, mass_id)
+# ---------------------------------------------------------
+# ELIMINAR MASS REQUEST
+# ---------------------------------------------------------
+@router.delete("/{request_id}")
+def delete_mass_request(
+    request_id: int,
+    db: Session = Depends(get_db),
+    user=Depends(get_current_user)
+):
+    req = db.query(MassRequest).filter(MassRequest.id == request_id).first()
+    if not req:
+        raise HTTPException(status_code=404, detail="Mass request not found")
 
-    if not result:
-        raise HTTPException(status_code=404, detail="MASS no encontrado")
-
-    return result
+    db.delete(req)
+    db.commit()
+    return {"message": "Mass request deleted"}
