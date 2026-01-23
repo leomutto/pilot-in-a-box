@@ -1,0 +1,1 @@
+# vacío a propósito: convierte 'app' en un paquete Python

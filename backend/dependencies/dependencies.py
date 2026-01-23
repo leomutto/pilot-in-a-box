@@ -1,11 +1,11 @@
-from fastapi import Depends, HTTPException
+from fastapi import Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordBearer
 from sqlalchemy.orm import Session
 from jose import jwt, JWTError
 
-from backend.db.session import get_db
-from backend.models.user import User
-from backend.core.security import SECRET_KEY, ALGORITHM
+from db.session import get_db
+from models.user import User
+from core.config import settings
 
 
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/auth/login")
@@ -17,17 +17,27 @@ def get_current_user(
 ):
     """Valida el token JWT y devuelve el usuario autenticado."""
 
-    try:
-        payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
-        email: str = payload.get("sub")
+    credentials_exception = HTTPException(
+        status_code=status.HTTP_401_UNAUTHORIZED,
+        detail="Invalid authentication credentials",
+        headers={"WWW-Authenticate": "Bearer"},
+    )
 
-        if email is None:
-            raise HTTPException(status_code=401, detail="Invalid token")
+    try:
+        payload = jwt.decode(
+            token,
+            settings.SECRET_KEY,
+            algorithms=[settings.ALGORITHM]
+        )
+
+        user_id: str = payload.get("sub")
+        if user_id is None:
+            raise credentials_exception
 
     except JWTError:
-        raise HTTPException(status_code=401, detail="Token expired or invalid")
+        raise credentials_exception
 
-    user = db.query(User).filter(User.email == email).first()
+    user = db.query(User).filter(User.id == int(user_id)).first()
 
     if not user:
         raise HTTPException(status_code=404, detail="User not found")

@@ -1,15 +1,20 @@
 from pydantic_settings import BaseSettings
+from pathlib import Path
+
+# Ruta absoluta al directorio raíz del backend dentro del contenedor
+BASE_DIR = Path(__file__).resolve().parent.parent.parent
+
+# Ruta absoluta al archivo .env real
+ENV_PATH = BASE_DIR / ".env"
 
 class Settings(BaseSettings):
-    PROJECT_NAME: str = "Pilot-in-a-Box"
-    API_VERSION: str = "v1"
-
     SECRET_KEY: str
-    ACCESS_TOKEN_EXPIRE_MINUTES: int = 60
-    REFRESH_TOKEN_EXPIRE_MINUTES: int = 60 * 24 * 7  # 7 días
+    ACCESS_TOKEN_EXPIRE_MINUTES: int
+    DATABASE_URL: str
+    ALGORITHM: str = "HS256"
 
     class Config:
-        env_file = ".env"
+        env_file = ENV_PATH
         env_file_encoding = "utf-8"
 
 settings = Settings()

@@ -1,19 +1,50 @@
-# Python cache
+# ----------------------------------------
+# PYTHON
+# ----------------------------------------
 __pycache__/
 *.pyc
 *.pyo
+*.pyd
 
 # Virtual environments
 venv/
 .env
 .env.*
+backend/.env
 
 # Alembic cache
 migrations/versions/__pycache__/
 migrations/__pycache__/
 
-# Local configs
+# SQLite (por si aparece en dev)
 *.sqlite3
 
 # Logs
 *.log
+
+
+# ----------------------------------------
+# NODE / NEXT.JS (frontend)
+# ----------------------------------------
+frontend/node_modules/
+frontend/.next/
+frontend/.env.local
+frontend/.env.development
+frontend/.env.production
+
+
+# ----------------------------------------
+# DOCKER
+# ----------------------------------------
+postgres_data/
+*.pid
+*.sock
+
+
+# ----------------------------------------
+# EDITOR / OS
+# ----------------------------------------
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
