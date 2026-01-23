@@ -1,54 +1,87 @@
-# 📘 **README.md — Pilot in a Box (MASS Simple)**
+# 📘 **README.md — MASS Simple (Pilot‑in‑a‑Box Foundation)**
 
 ## 🚀 Overview
 
-**Pilot in a Box — MASS Simple** es una versión minimalista y completamente reconstruida del backend MASS, diseñada para servir como base limpia, reproducible y extensible para futuros desarrollos.
+**MASS Simple** es el **MVP oficial** del ecosistema MASS y constituye la base técnica del futuro **Pilot‑in‑a‑Box** (PoC‑ready).  
+Fue completamente reconstruido para ofrecer una arquitectura **limpia, reproducible y extensible**, eliminando drift, código legacy y migraciones obsoletas.
 
-Este proyecto **NO implementa MASS Enterprise v1.1**, ni pipelines de normalización, ni validadores complejos.  
-En su lugar, ofrece:
+Este proyecto **NO implementa MASS Enterprise v1.1**, ni pipelines avanzados, ni validadores complejos.  
+Su propósito es entregar un backend estable y minimalista sobre el cual construir:
 
-- Un backend FastAPI minimalista  
-- Un modelo único: `MassRequest`  
-- Persistencia con SQLAlchemy + Alembic  
-- Infraestructura reproducible con Docker Compose  
-- Un punto de partida sólido para construir MASS simple paso a paso  
+- El **Pilot‑in‑a‑Box** (shadow mode, read‑only, con dashboard, M&V, BioCore, observabilidad)  
+- MASS Enterprise en etapas posteriores  
 
-Este repositorio fue reseteado y limpiado para eliminar drift, código legacy y migraciones antiguas.
+### ✔ MASS Simple ofrece hoy:
+
+- Backend **FastAPI** estable  
+- Modelo único: `MassRequest`  
+- Persistencia real con **SQLAlchemy + Alembic**  
+- Infraestructura reproducible con **Docker Compose**  
+- Arquitectura modular y preparada para escalar  
+- Base sólida para implementar seguridad, validación, M&V, dashboard y BioCore  
 
 ---
 
-## 🏗️ Arquitectura del Proyecto
+## 🏗️ Arquitectura del Proyecto (Actualizada)
 
 ```
 pilot-in-a-box/
 │
 ├── backend/
+│   ├── api/
+│   │   ├── routes/
+│   │   │   ├── auth.py
+│   │   │   ├── mass.py
+│   │   │   └── __init__.py
+│   │   └── schemas/
+│   │       └── __init__.py
+│   │
+│   ├── app/
+│   │   ├── main.py
+│   │   └── __init__.py
+│   │
+│   ├── core/
+│   │   ├── config.py
+│   │   ├── security.py
+│   │   ├── validators/
+│   │   └── __init__.py
+│   │
 │   ├── db/
-│   │   ├── base.py              # Declarative Base
-│   │   ├── session.py           # SessionLocal + engine
+│   │   ├── base.py
+│   │   ├── session.py
 │   │   └── __init__.py
 │   │
 │   ├── models/
-│   │   ├── mass.py              # Modelo MassRequest
+│   │   ├── mass.py
+│   │   ├── user.py
+│   │   └── __init__.py
+│   │
+│   ├── schemas/
+│   │   ├── mass.py
+│   │   └── __init__.py
+│   │
+│   ├── services/
+│   │   ├── auth_service.py
 │   │   └── __init__.py
 │   │
 │   ├── migrations/
-│   │   ├── env.py               # Configuración Alembic
+│   │   ├── env.py
 │   │   └── versions/
-│   │       └── 1facca6dc8e8_create_mass_requests_table.py
 │   │
-│   ├── services/
-│   │   └── mass_service.py      # Lógica de negocio MASS simple
+│   ├── dependencies/
+│   │   ├── db.py
+│   │   ├── dependencies.py
+│   │   └── __init__.py
 │   │
-│   ├── core/
-│   │   └── validators/
-│   │       └── mass_validator.py
+│   ├── tests/
+│   │   └── test_ingestion_pipeline.py
 │   │
-│   ├── main.py                  # Punto de entrada FastAPI
 │   ├── Dockerfile
+│   ├── alembic.ini
+│   ├── requirements.txt
 │   └── .gitignore
 │
-├── frontend/                    # (Pendiente de actualización)
+├── frontend/                # (Pendiente — se implementará en el Pilot‑in‑a‑Box)
 │
 ├── docker-compose.yml
 └── README.md
@@ -56,13 +89,12 @@ pilot-in-a-box/
 
 ---
 
-## 📡 Endpoints (MASS Simple)
+## 📡 Endpoints (Estado Actual)
 
-Los endpoints se encuentran en desarrollo.  
-El objetivo es implementar:
+Los endpoints están en desarrollo y evolucionarán hacia el MVP completo.
 
 ### `POST /mass-requests/`
-Crea un nuevo request MASS simple.
+Crea un nuevo request MASS.
 
 ### `GET /mass-requests/{id}`
 Obtiene un request por ID.
@@ -71,24 +103,22 @@ Obtiene un request por ID.
 Lista requests almacenados.
 
 ### `DELETE /mass-requests/{id}`
-Elimina un request (soft delete opcional).
+Elimina un request.
 
 ### `PATCH /mass-requests/{id}/status`
 Actualiza el estado del request.
 
 ---
 
-## 🗄️ Modelo Actual
-
-### `MassRequest`
+## 🗄️ Modelo Actual — `MassRequest`
 
 Campos:
 
-- `id` (int, PK)
-- `payload` (JSON)
-- `status` (str: pending, processing, done)
-- `created_at` (datetime)
-- `updated_at` (datetime)
+- `id` (int, PK)  
+- `payload` (JSON)  
+- `status` (str: pending, processing, done)  
+- `created_at` (datetime)  
+- `updated_at` (datetime)  
 
 ---
 
@@ -104,13 +134,13 @@ cd pilot-in-a-box
 ### 2. Levantar el entorno
 
 ```bash
-docker compose up --build
+docker compose up -d --build
 ```
 
 Esto inicia:
 
-- Backend FastAPI en `http://localhost:8000`
-- Base de datos Postgres en `localhost:5432`
+- Backend FastAPI → `http://localhost:8000`
+- Postgres → `localhost:5432`
 
 ### 3. Acceder a Swagger
 
@@ -122,36 +152,63 @@ http://localhost:8000/docs
 
 ## 🧪 Estado Actual del Proyecto
 
-- Backend MASS simple reconstruido desde cero  
-- Migración inicial aplicada  
-- Base de datos limpia y sincronizada  
+- Backend estable y reproducible  
+- Conexión a Postgres funcionando  
+- Alembic operativo  
+- `.env` corregido y fuera del repo  
+- Estructura limpia y coherente  
+- Docker Compose determinístico  
 - Código legacy eliminado  
-- `.gitignore` actualizado  
-- Estructura estable y sin drift  
+- Punto de restauración estable  
 
 ---
 
 ## 📦 Tecnologías Utilizadas
 
-- **FastAPI**
-- **SQLAlchemy**
-- **Alembic**
-- **Pydantic**
-- **Docker & Docker Compose**
-- **Python 3.11**
+- **FastAPI**  
+- **SQLAlchemy**  
+- **Alembic**  
+- **Pydantic**  
+- **Docker & Docker Compose**  
+- **Python 3.11**  
 
 ---
 
-## 🧭 Roadmap MASS Simple
+## 🧭 Roadmap (MVP MASS Simple → Pilot‑in‑a‑Box)
 
-- [ ] Implementar POST `/mass-requests/`
-- [ ] Implementar GET `/mass-requests/{id}`
-- [ ] Implementar GET `/mass-requests/`
-- [ ] Implementar DELETE `/mass-requests/{id}`
-- [ ] Implementar actualización de estado
-- [ ] Añadir pruebas unitarias
-- [ ] Añadir autenticación opcional
-- [ ] Integrar frontend minimalista
+### 🔥 Fase 1 — Cierre del Backend (MVP)
+- [ ] Seguridad completa (HTTPBearer + JWT)
+- [ ] Validación y sanitización de datos
+- [ ] Servicios desacoplados
+- [ ] Documentación OpenAPI
+- [ ] Tests backend
+
+### 🎨 Fase 2 — Dashboard (Next.js)
+- [ ] Setup Next.js
+- [ ] KPIs + tendencias
+- [ ] Before/after
+- [ ] Filtros
+- [ ] Export CSV
+
+### 📊 Fase 3 — M&V
+- [ ] Baseline
+- [ ] Supuestos
+- [ ] Comparación cuantitativa
+- [ ] Export PDF
+
+### 🔍 Fase 4 — Observabilidad + Audit Trail
+- [ ] OpenTelemetry
+- [ ] Logs estructurados
+- [ ] Audit trail completo
+
+### 🧠 Fase 5 — Integración BioCore
+- [ ] Cliente robusto (timeouts, retries, circuit breaker)
+- [ ] Recomendaciones reales en dashboard
+
+### ☁️ Fase 6 — Deploy Cloud + Helm Chart
+- [ ] Helm chart v0.1
+- [ ] HTTPS + password-protection
+- [ ] Script de actualización
 
 ---
 
@@ -161,3 +218,5 @@ http://localhost:8000/docs
 Arquitectura limpia, reproducibilidad y diseño de pipelines minimalistas.
 
 ---
+
+# ✔️ README actualizado y alineado con el proyecto
