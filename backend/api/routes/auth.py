@@ -6,6 +6,7 @@ from datetime import datetime
 from db.session import get_db
 from models.user import User
 from core.security import verify_password, get_password_hash, create_access_token
+from dependencies.dependencies import current_user  # <-- IMPORTANTE
 
 router = APIRouter(prefix="/auth", tags=["auth"])
 
@@ -51,7 +52,6 @@ def register(payload: RegisterRequest, db: Session = Depends(get_db)):
     user = User(
         email=payload.email,
         hashed_password=hashed,
-        # si en el futuro agregamos columna role, se puede setear aquí
     )
 
     db.add(user)
@@ -78,7 +78,18 @@ def login(payload: LoginRequest, db: Session = Depends(get_db)):
             detail="Invalid credentials"
         )
 
-    # Por ahora todos los usuarios son "viewer" a nivel lógico
     token = create_access_token(subject=str(user.id))
 
     return LoginResponse(access_token=token)
+
+
+# -----------------------------
+# Get current authenticated user
+# -----------------------------
+@router.get("/me")
+def get_me(user: User = Depends(current_user)):
+    return {
+        "id": user.id,
+        "email": user.email,
+        "role": getattr(user, "role", "viewer")
+    }
