@@ -1,14 +1,11 @@
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
 from pydantic import BaseModel
-from datetime import datetime, timedelta
-from jose import jwt   # ← IMPORT CORRECTO
+from datetime import datetime
 
 from db.session import get_db
 from models.user import User
-from core.security import verify_password, get_password_hash
-from core.config import settings
-
+from core.security import verify_password, get_password_hash, create_access_token
 
 router = APIRouter(prefix="/auth", tags=["auth"])
 
@@ -16,7 +13,6 @@ router = APIRouter(prefix="/auth", tags=["auth"])
 # -----------------------------
 # Pydantic Schemas
 # -----------------------------
-
 class RegisterRequest(BaseModel):
     email: str
     password: str
@@ -41,7 +37,6 @@ class LoginResponse(BaseModel):
 # -----------------------------
 # Register
 # -----------------------------
-
 @router.post("/register", response_model=RegisterResponse)
 def register(payload: RegisterRequest, db: Session = Depends(get_db)):
     existing = db.query(User).filter(User.email == payload.email).first()
@@ -55,7 +50,8 @@ def register(payload: RegisterRequest, db: Session = Depends(get_db)):
 
     user = User(
         email=payload.email,
-        hashed_password=hashed
+        hashed_password=hashed,
+        # si en el futuro agregamos columna role, se puede setear aquí
     )
 
     db.add(user)
@@ -72,35 +68,17 @@ def register(payload: RegisterRequest, db: Session = Depends(get_db)):
 # -----------------------------
 # Login
 # -----------------------------
-
 @router.post("/login", response_model=LoginResponse)
 def login(payload: LoginRequest, db: Session = Depends(get_db)):
     user = db.query(User).filter(User.email == payload.email).first()
 
-    if not user:
+    if not user or not verify_password(payload.password, user.hashed_password):
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Invalid credentials"
         )
 
-    if not verify_password(payload.password, user.hashed_password):
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Invalid credentials"
-        )
-
-    # Crear JWT
-    expire = datetime.utcnow() + timedelta(minutes=settings.ACCESS_TOKEN_EXPIRE_MINUTES)
-
-    token_data = {
-        "sub": str(user.id),
-        "exp": expire
-    }
-
-    token = jwt.encode(
-        token_data,
-        settings.SECRET_KEY,
-        algorithm=settings.ALGORITHM
-    )
+    # Por ahora todos los usuarios son "viewer" a nivel lógico
+    token = create_access_token(subject=str(user.id))
 
     return LoginResponse(access_token=token)
