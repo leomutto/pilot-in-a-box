@@ -3,8 +3,8 @@ from sqlalchemy.orm import Session
 
 from db.session import get_db
 from models.mass import MassRequest
-from dependencies.dependencies import get_current_user
-from schemas.mass import MassRequestBase  # <-- IMPORTANTE
+from dependencies.dependencies import current_user   # <--- ACTUALIZADO
+from schemas.mass import MassRequestBase
 
 router = APIRouter(prefix="/mass-requests", tags=["mass"])
 
@@ -15,7 +15,7 @@ router = APIRouter(prefix="/mass-requests", tags=["mass"])
 @router.get("/", response_model=list[MassRequestBase])
 def list_mass_requests(
     db: Session = Depends(get_db),
-    user=Depends(get_current_user)
+    user=Depends(current_user)   # <--- ACTUALIZADO
 ):
     return db.query(MassRequest).filter(
         MassRequest.user_id == user.id
@@ -29,7 +29,7 @@ def list_mass_requests(
 def get_mass_request(
     request_id: int,
     db: Session = Depends(get_db),
-    user=Depends(get_current_user)
+    user=Depends(current_user)   # <--- ACTUALIZADO
 ):
     req = db.query(MassRequest).filter(
         MassRequest.id == request_id,
@@ -49,7 +49,7 @@ def get_mass_request(
 def create_mass_request(
     payload: dict,
     db: Session = Depends(get_db),
-    user=Depends(get_current_user)
+    user=Depends(current_user)   # <--- ACTUALIZADO
 ):
     new_req = MassRequest(
         user_id=user.id,
@@ -70,7 +70,7 @@ def create_mass_request(
 def delete_mass_request(
     request_id: int,
     db: Session = Depends(get_db),
-    user=Depends(get_current_user)
+    user=Depends(current_user)   # <--- ACTUALIZADO
 ):
     req = db.query(MassRequest).filter(
         MassRequest.id == request_id,
