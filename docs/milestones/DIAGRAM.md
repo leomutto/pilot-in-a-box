@@ -1,42 +1,35 @@
+Perfecto, Leonardo. Acá tenés **`DIAGRAM.md` completamente actualizado**, alineado con:
 
-```
-docs/DIAGRAM.md
-```
+- MASS Simple  
+- MASS Enterprise  
+- Normalizadores separados  
+- Nuevo flujo de datos  
+- Nueva estructura de carpetas  
+- Objetivo Pilot‑in‑a‑Box  
 
-Incluye:
-
-- Arquitectura general  
-- Arquitectura backend  
-- Flujo de datos  
-- Secuencia MASS Request  
-- Secuencia BioCore (objetivo Pilot‑in‑a‑Box)  
-- Pipeline de ingesta  
-- Observabilidad (OTEL)  
-- Audit trail  
-
-Todo está alineado con MASS Simple y con la visión del Pilot‑in‑a‑Box.
+Listo para copiar y pegar.
 
 ---
 
 # 📄 **DIAGRAM.md**  
-*Diagramas ASCII de arquitectura, flujo y secuencia*
+*Diagramas ASCII de arquitectura, flujo, secuencia y visión Pilot‑in‑a‑Box*
 
 ---
 
-# # 1. Arquitectura General del Sistema
+# 1. Arquitectura General del Sistema
 
 ```
                    ┌──────────────────────────┐
                    │        Frontend          │
-                   │        Next.js           │
+                   │         Next.js          │
                    │  (Dashboard Profesional) │
                    └─────────────┬────────────┘
                                  │
                                  ▼
-                     ┌──────────────────────┐
-                     │      FastAPI         │
-                     │   (MASS Simple API)  │
-                     └─────────────┬────────┘
+                     ┌────────────────────────┐
+                     │        FastAPI         │
+                     │  MASS Simple + Ent.    │
+                     └─────────────┬──────────┘
                                    │
          ┌─────────────────────────┼──────────────────────────┐
          ▼                         ▼                          ▼
@@ -58,7 +51,7 @@ Todo está alineado con MASS Simple y con la visión del Pilot‑in‑a‑Box.
 
 ---
 
-# # 2. Arquitectura Interna del Backend
+# 2. Arquitectura Interna del Backend
 
 ```
 backend/
@@ -68,18 +61,18 @@ backend/
 │   │   ├── auth.py
 │   │   └── mass.py
 │   └── schemas/
+│       ├── mass_simple.py
+│       ├── mass_payload.py
+│       └── mass.py
 │
 ├── services/
-│   ├── auth_service.py
-│   └── mass_service.py
+│   ├── mass_normalizer_simple.py
+│   ├── mass_normalizer.py
+│   └── auth_service.py
 │
 ├── models/
 │   ├── user.py
-│   └── mass.py
-│
-├── schemas/
-│   ├── user.py
-│   └── mass.py
+│   └── mass_request.py
 │
 ├── core/
 │   ├── config.py
@@ -95,7 +88,7 @@ backend/
 
 ---
 
-# # 3. Flujo de Datos (End-to-End)
+# 3. Flujo de Datos (End‑to‑End)
 
 ```
 Usuario
@@ -107,7 +100,7 @@ Frontend (Next.js)
 FastAPI (routes)
    │  valida schemas
    ▼
-Services (lógica)
+Services (normalización + lógica)
    │
    ▼
 SQLAlchemy (ORM)
@@ -121,7 +114,7 @@ Respuesta → Frontend → Usuario
 
 ---
 
-# # 4. Secuencia: MASS Request (Actual)
+# 4. Secuencia: MASS Simple (`POST /mass`)
 
 ```
 Usuario
@@ -130,16 +123,19 @@ Usuario
 Frontend
    │  POST /mass
    ▼
-FastAPI (mass.py)
-   │  valida payload
+FastAPI (MassSimplePayload)
+   │
    ▼
-mass_service.py
-   │  lógica de negocio
+normalize_mass_payload_simple
+   │
    ▼
-SQLAlchemy
-   │  inserta / consulta
+Generación automática:
+  - correlation_id
+  - idempotency_key
+  - schema_version simple
+   │
    ▼
-Postgres
+SQLAlchemy → Postgres
    │
    ▼
 FastAPI → Frontend → Usuario
@@ -147,41 +143,30 @@ FastAPI → Frontend → Usuario
 
 ---
 
-# # 5. Secuencia: Integración BioCore (Objetivo Pilot‑in‑a‑Box)
+# 5. Secuencia: MASS Enterprise (`POST /mass/generate`)
 
 ```
 Usuario
    │
    ▼
-Frontend (Dashboard)
-   │  GET /recommendations
+Frontend
+   │  POST /mass/generate
    ▼
-FastAPI (mass.py)
+FastAPI (MassPayload)
    │
    ▼
-mass_service.py
-   │
-   │  Llama a BioCore:
-   │  POST http://biocore/recommend
-   ▼
-BioCore (Caja Negra)
-   │  procesa
-   ▼
-Respuesta BioCore
+normalize_mass_payload (Enterprise)
    │
    ▼
-mass_service.py
-   │  agrega metadata + audit trail
-   ▼
-FastAPI
+SQLAlchemy → Postgres
    │
    ▼
-Frontend → Usuario
+FastAPI → Frontend → Usuario
 ```
 
 ---
 
-# # 6. Pipeline de Ingesta (CSV/Parquet)
+# 6. Pipeline de Ingesta (CSV/Parquet) — Objetivo
 
 ```
 Archivo CSV/Parquet
@@ -190,7 +175,7 @@ Archivo CSV/Parquet
 Validación de Schema (validators/)
         │
         ▼
-Normalización
+Normalización (simple o enterprise)
         │
         ▼
 SQLAlchemy (bulk insert)
@@ -199,12 +184,12 @@ SQLAlchemy (bulk insert)
 Postgres
         │
         ▼
-Audit Trail (pendiente)
+Audit Trail (futuro)
 ```
 
 ---
 
-# # 7. Observabilidad (OpenTelemetry)
+# 7. Observabilidad (OpenTelemetry) — Objetivo Pilot‑in‑a‑Box
 
 ```
 Request Usuario
@@ -222,12 +207,12 @@ Request Usuario
 Collector OTLP (local o remoto)
        │
        ▼
-Backend de Observabilidad (Grafana/Tempo/Prometheus)
+Backend Observabilidad (Grafana/Tempo/Prometheus)
 ```
 
 ---
 
-# # 8. Audit Trail (Objetivo Pilot‑in‑a‑Box)
+# 8. Audit Trail — Objetivo Pilot‑in‑a‑Box
 
 ```
 Operación (ej: MASS Request)
@@ -252,13 +237,13 @@ Panel de Auditoría (Dashboard)
 
 ---
 
-# # 9. Diagrama de Secuencia Completo (Pilot‑in‑a‑Box)
+# 9. Secuencia Completa Pilot‑in‑a‑Box (con BioCore)
 
 ```
 Usuario
    │
    ▼
-Frontend
+Frontend (Dashboard)
    │───────────────► FastAPI
    │                 │
    │                 ▼

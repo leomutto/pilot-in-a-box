@@ -5,8 +5,12 @@ from datetime import datetime
 
 from db.session import get_db
 from models.user import User
-from core.security import verify_password, get_password_hash, create_access_token
-from dependencies.dependencies import current_user  # <-- IMPORTANTE
+from core.security import (
+    verify_password,
+    get_password_hash,
+    create_access_token,
+    get_current_user,   # <-- IMPORTANTE: nueva fuente de verdad
+)
 
 router = APIRouter(prefix="/auth", tags=["auth"])
 
@@ -87,7 +91,7 @@ def login(payload: LoginRequest, db: Session = Depends(get_db)):
 # Get current authenticated user
 # -----------------------------
 @router.get("/me")
-def get_me(user: User = Depends(current_user)):
+def get_me(user: User = Depends(get_current_user)):
     return {
         "id": user.id,
         "email": user.email,

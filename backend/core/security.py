@@ -19,7 +19,8 @@ SECRET_KEY = settings.SECRET_KEY
 ALGORITHM = settings.ALGORITHM
 ACCESS_TOKEN_EXPIRE_MINUTES = settings.ACCESS_TOKEN_EXPIRE_MINUTES
 
-security_scheme = HTTPBearer()  # HTTP Bearer para Authorization: Bearer <token>
+# HTTP Bearer para Authorization: Bearer <token>
+security_scheme = HTTPBearer()
 
 
 # ---------------------------------------------------------

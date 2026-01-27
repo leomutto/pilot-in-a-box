@@ -31,7 +31,6 @@ app.add_middleware(
 )
 
 
-
 # ---------------------------------------------------------
 # Crear tablas al iniciar FastAPI
 # ---------------------------------------------------------
@@ -58,3 +57,4 @@ app.include_router(mass_router)
 # app.include_router(admin_router)
 # app.include_router(analytics_router)
 # app.include_router(ai_router)
+# app.include_router(integration_router)

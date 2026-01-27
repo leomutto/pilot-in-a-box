@@ -1,9 +1,22 @@
+Perfecto, Leonardo. Acá tenés **`PROJECT_MANAGEMENT.md` completamente actualizado**, alineado con:
+
+- MASS Simple funcionando  
+- MASS Enterprise funcionando  
+- Normalizadores separados  
+- Backend estable  
+- Roadmap, Gantt y Estimate actualizados  
+- Próximos pasos reales del proyecto  
+
+Listo para copiar y pegar.
+
+---
+
 # 📄 **PROJECT_MANAGEMENT.md**  
 *Tablero Kanban + Backlog priorizado (EPIC → Feature → Task)*
 
 ---
 
-# # 1. Kanban Board (Texto para GitHub Projects)
+# 1. Kanban Board (Texto para GitHub Projects)
 
 Este tablero está diseñado para ser replicado en GitHub Projects como columnas y tarjetas.
 
@@ -18,61 +31,67 @@ Este tablero está diseñado para ser replicado en GitHub Projects como columnas
 - Crear roles mínimos (admin/viewer)
 - Configurar CORS restrictivo
 
-### Pipeline de Datos
+### Pipeline MASS (Simple + Enterprise)
+- Validación estricta MASS Enterprise
+- Normalización Enterprise completa
 - Completar validadores en `core/validators`
-- Normalización de payloads MASS
 - Manejo de errores estandarizado
-- Versionado de datasets
+- Versionado de payloads
 
 ### Servicios
 - Crear `mass_service.py`
 - Revisar `auth_service.py`
 - Separar lógica de negocio de rutas
+- Crear capa de repositorios (opcional)
 
 ### Documentación
 - Completar OpenAPI (modelos, ejemplos, respuestas)
-- README del backend
+- Documentar errores y códigos HTTP
+- Actualizar README backend
 
 ---
 
 ## 🟧 **IN PROGRESS**
-- Limpieza de módulos
-- Tests de ingesta
+- Tests de ingesta MASS Simple
 - Tests de autenticación
+- Limpieza de módulos y dependencias
 
 ---
 
 ## 🟨 **READY FOR REVIEW**
-- Estructura backend estable  
-- Docker Compose determinístico  
-- Alembic funcionando  
+- Backend estable (MASS Simple + Enterprise)
+- Normalizadores separados
+- Docker Compose determinístico
+- Alembic funcionando
 
 ---
 
 ## 🟦 **BLOCKED / WAITING**
-- Esperando container BioCore  
-- Definir baseline y supuestos  
-- Esperando acceso a DNS/subdominio  
+- Esperando container BioCore
+- Definir baseline y supuestos M&V
+- Acceso a DNS/subdominio para deploy cloud
 
 ---
 
 ## 🟩 **DONE**
-- Backend estable  
-- DB conectada  
-- `.env` corregido  
-- Estructura de carpetas limpia  
-- Repositorio sincronizado  
-- Docker Compose funcionando  
+- MASS Simple funcionando
+- MASS Enterprise funcionando
+- Normalización simple y enterprise operativa
+- DB conectada
+- `.env` corregido
+- Estructura de carpetas limpia
+- Repositorio sincronizado
+- Docker Compose funcionando
 
 ---
 
-# # 2. Backlog Priorizado (EPIC → Feature → Task)
+# 2. Backlog Priorizado (EPIC → Feature → Task)
 
 Organizado por impacto, dependencias y alineación con Pilot‑in‑a‑Box.
 
 ---
 
-# **EPIC 1 — Backend Hardening (MVP MASS Simple)**
+# **EPIC 1 — Backend Hardening (MASS Simple + Enterprise)**
 
 ## Feature 1.1 — Seguridad Completa
 - Reemplazar OAuth2PasswordBearer por HTTPBearer  
@@ -82,17 +101,18 @@ Organizado por impacto, dependencias y alineación con Pilot‑in‑a‑Box.
 - Configurar CORS restrictivo  
 - Agregar rate limiting básico  
 
-## Feature 1.2 — Validación y Sanitización de Datos
+## Feature 1.2 — Validación y Normalización
+- Validación estricta MASS Enterprise  
+- Normalización Enterprise completa  
 - Completar validadores en `core/validators`  
-- Normalizar payloads MASS  
 - Manejo de errores estandarizado  
-- Versionado de datasets  
+- Versionado de payloads  
 
 ## Feature 1.3 — Servicios Desacoplados
 - Crear `mass_service.py`  
 - Revisar `auth_service.py`  
 - Separar rutas de lógica de negocio  
-- Crear capa de repositorios si es necesario  
+- Crear capa de repositorios (opcional)  
 
 ## Feature 1.4 — Documentación OpenAPI
 - Describir modelos  
@@ -104,6 +124,7 @@ Organizado por impacto, dependencias y alineación con Pilot‑in‑a‑Box.
 - Completar `test_ingestion_pipeline.py`  
 - Agregar tests de autenticación  
 - Agregar tests de MASS Requests  
+- Tests de normalización simple y enterprise  
 
 ---
 
@@ -111,7 +132,7 @@ Organizado por impacto, dependencias y alineación con Pilot‑in‑a‑Box.
 
 ## Feature 2.1 — Setup de Frontend
 - Crear proyecto Next.js  
-- Configurar UI profesional neutra  
+- Configurar UI profesional  
 - Integrar autenticación con backend  
 
 ## Feature 2.2 — KPIs y Tendencias
@@ -159,7 +180,7 @@ Organizado por impacto, dependencias y alineación con Pilot‑in‑a‑Box.
 
 ## Feature 4.1 — OpenTelemetry
 - Instrumentar backend  
-- Instrumentar frontend (web vitals)  
+- Instrumentar frontend  
 - Configurar collector local  
 - Export OTLP  
 

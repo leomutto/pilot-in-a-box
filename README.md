@@ -1,24 +1,45 @@
-# 📘 **README.md — MASS Simple (Pilot‑in‑a‑Box Foundation)**
+Perfecto, Leonardo. Acá tenés **el README.md completamente actualizado**, alineado con:
+
+- MASS Simple funcionando  
+- MASS Enterprise funcionando  
+- Normalizadores separados  
+- Nuevos endpoints reales  
+- Nueva arquitectura  
+- Nuevo roadmap  
+- Estado actual del backend  
+
+Listo para copiar y pegar.
+
+---
+
+# 📘 **README.md — MASS Simple + MASS Enterprise (Pilot‑in‑a‑Box Foundation)**
 
 ## 🚀 Overview
 
-**MASS Simple** es el **MVP oficial** del ecosistema MASS y constituye la base técnica del futuro **Pilot‑in‑a‑Box** (PoC‑ready).  
-Fue completamente reconstruido para ofrecer una arquitectura **limpia, reproducible y extensible**, eliminando drift, código legacy y migraciones obsoletas.
+Este repositorio contiene la base técnica del ecosistema MASS y del futuro **Pilot‑in‑a‑Box**.  
+El backend fue reconstruido desde cero para ofrecer una arquitectura **limpia, reproducible y extensible**, eliminando drift, código legacy y migraciones obsoletas.
 
-Este proyecto **NO implementa MASS Enterprise v1.1**, ni pipelines avanzados, ni validadores complejos.  
-Su propósito es entregar un backend estable y minimalista sobre el cual construir:
+Actualmente implementa **dos pipelines MASS coexistentes**:
 
-- El **Pilot‑in‑a‑Box** (shadow mode, read‑only, con dashboard, M&V, BioCore, observabilidad)  
-- MASS Enterprise en etapas posteriores  
+### ✔ MASS Simple  
+- Payload libre  
+- Normalización flexible  
+- Ideal para ingesta rápida y pruebas  
 
-### ✔ MASS Simple ofrece hoy:
+### ✔ MASS Enterprise (v1.1 parcial)  
+- Contrato formal  
+- Trazabilidad completa  
+- Estructura estandarizada  
+- Normalización Enterprise  
 
-- Backend **FastAPI** estable  
-- Modelo único: `MassRequest`  
-- Persistencia real con **SQLAlchemy + Alembic**  
-- Infraestructura reproducible con **Docker Compose**  
-- Arquitectura modular y preparada para escalar  
-- Base sólida para implementar seguridad, validación, M&V, dashboard y BioCore  
+Ambos conviven en un backend estable, modular y preparado para escalar hacia:
+
+- Dashboard profesional (Next.js)  
+- M&V (Measurement & Verification)  
+- Observabilidad (OpenTelemetry)  
+- Audit Trail  
+- Integración BioCore  
+- Deploy Cloud (Helm Chart)  
 
 ---
 
@@ -34,7 +55,9 @@ pilot-in-a-box/
 │   │   │   ├── mass.py
 │   │   │   └── __init__.py
 │   │   └── schemas/
-│   │       └── __init__.py
+│   │       ├── mass_simple.py
+│   │       ├── mass_payload.py
+│   │       └── mass.py
 │   │
 │   ├── app/
 │   │   ├── main.py
@@ -52,15 +75,17 @@ pilot-in-a-box/
 │   │   └── __init__.py
 │   │
 │   ├── models/
-│   │   ├── mass.py
+│   │   ├── mass_request.py
 │   │   ├── user.py
 │   │   └── __init__.py
 │   │
 │   ├── schemas/
-│   │   ├── mass.py
+│   │   ├── mass_request.py
 │   │   └── __init__.py
 │   │
 │   ├── services/
+│   │   ├── mass_normalizer_simple.py
+│   │   ├── mass_normalizer.py
 │   │   ├── auth_service.py
 │   │   └── __init__.py
 │   │
@@ -81,7 +106,7 @@ pilot-in-a-box/
 │   ├── requirements.txt
 │   └── .gitignore
 │
-├── frontend/                # (Pendiente — se implementará en el Pilot‑in‑a‑Box)
+├── frontend/                # (Pendiente — se implementará en Pilot‑in‑a‑Box)
 │
 ├── docker-compose.yml
 └── README.md
@@ -91,22 +116,22 @@ pilot-in-a-box/
 
 ## 📡 Endpoints (Estado Actual)
 
-Los endpoints están en desarrollo y evolucionarán hacia el MVP completo.
+### ✔ MASS Simple  
+**`POST /mass`**  
+- Recibe `{ "payload": {...} }`  
+- Normaliza automáticamente  
+- Genera metadata Enterprise  
+- Persiste en `MassRequest`
 
-### `POST /mass-requests/`
-Crea un nuevo request MASS.
+### ✔ MASS Enterprise  
+**`POST /mass/generate`**  
+- Requiere contrato Enterprise v1.1  
+- Normalización estricta  
+- Persistencia con trazabilidad
 
-### `GET /mass-requests/{id}`
-Obtiene un request por ID.
-
-### `GET /mass-requests/`
-Lista requests almacenados.
-
-### `DELETE /mass-requests/{id}`
-Elimina un request.
-
-### `PATCH /mass-requests/{id}/status`
-Actualiza el estado del request.
+### ✔ Recuperación  
+**`GET /mass/{id}`**  
+Devuelve un MASS request almacenado.
 
 ---
 
@@ -115,10 +140,12 @@ Actualiza el estado del request.
 Campos:
 
 - `id` (int, PK)  
-- `payload` (JSON)  
-- `status` (str: pending, processing, done)  
+- `user_id`  
+- `schema_version`  
+- `correlation_id`  
+- `idempotency_key`  
+- `payload_json` (JSON normalizado)  
 - `created_at` (datetime)  
-- `updated_at` (datetime)  
 
 ---
 
@@ -152,14 +179,15 @@ http://localhost:8000/docs
 
 ## 🧪 Estado Actual del Proyecto
 
-- Backend estable y reproducible  
-- Conexión a Postgres funcionando  
-- Alembic operativo  
-- `.env` corregido y fuera del repo  
-- Estructura limpia y coherente  
+- MASS Simple funcionando  
+- MASS Enterprise funcionando  
+- Normalizadores separados  
+- Persistencia unificada  
+- Autenticación JWT operativa  
+- Alembic estable  
 - Docker Compose determinístico  
-- Código legacy eliminado  
-- Punto de restauración estable  
+- Arquitectura limpia y modular  
+- Punto de restauración sólido  
 
 ---
 
@@ -174,41 +202,42 @@ http://localhost:8000/docs
 
 ---
 
-## 🧭 Roadmap (MVP MASS Simple → Pilot‑in‑a‑Box)
+## 🧭 Roadmap (MASS Simple + Enterprise → Pilot‑in‑a‑Box)
 
-### 🔥 Fase 1 — Cierre del Backend (MVP)
-- [ ] Seguridad completa (HTTPBearer + JWT)
-- [ ] Validación y sanitización de datos
-- [ ] Servicios desacoplados
-- [ ] Documentación OpenAPI
-- [ ] Tests backend
+### 🔥 Fase 1 — Backend Hardening
+- [ ] Validación estricta MASS Enterprise  
+- [ ] Normalización Enterprise completa  
+- [ ] Servicios desacoplados  
+- [ ] Seguridad: HTTPBearer + JWT  
+- [ ] Documentación OpenAPI  
+- [ ] Tests backend  
 
 ### 🎨 Fase 2 — Dashboard (Next.js)
-- [ ] Setup Next.js
-- [ ] KPIs + tendencias
-- [ ] Before/after
-- [ ] Filtros
-- [ ] Export CSV
+- [ ] Setup Next.js  
+- [ ] KPIs + tendencias  
+- [ ] Before/after  
+- [ ] Filtros  
+- [ ] Export CSV  
 
 ### 📊 Fase 3 — M&V
-- [ ] Baseline
-- [ ] Supuestos
-- [ ] Comparación cuantitativa
-- [ ] Export PDF
+- [ ] Baseline  
+- [ ] Supuestos  
+- [ ] Comparación cuantitativa  
+- [ ] Export PDF  
 
 ### 🔍 Fase 4 — Observabilidad + Audit Trail
-- [ ] OpenTelemetry
-- [ ] Logs estructurados
-- [ ] Audit trail completo
+- [ ] OpenTelemetry  
+- [ ] Logs estructurados  
+- [ ] Audit trail completo  
 
 ### 🧠 Fase 5 — Integración BioCore
-- [ ] Cliente robusto (timeouts, retries, circuit breaker)
-- [ ] Recomendaciones reales en dashboard
+- [ ] Cliente robusto (timeouts, retries, circuit breaker)  
+- [ ] Recomendaciones reales en dashboard  
 
 ### ☁️ Fase 6 — Deploy Cloud + Helm Chart
-- [ ] Helm chart v0.1
-- [ ] HTTPS + password-protection
-- [ ] Script de actualización
+- [ ] Helm chart v0.1  
+- [ ] HTTPS + password-protection  
+- [ ] Script de actualización  
 
 ---
 
@@ -219,4 +248,3 @@ Arquitectura limpia, reproducibilidad y diseño de pipelines minimalistas.
 
 ---
 
-# ✔️ README actualizado y alineado con el proyecto

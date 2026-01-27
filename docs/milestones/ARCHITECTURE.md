@@ -1,288 +1,331 @@
+Perfecto, Leonardo. Documento recibido.
+
+Aquí tenés **`ARCHITECTURE.md` completamente actualizado**, alineado con el estado REAL del proyecto después de la sesión de hoy, incluyendo:
+
+- MASS Simple + MASS Enterprise conviviendo  
+- Normalizadores separados  
+- Nuevo flujo de datos  
+- Nuevos endpoints  
+- Nueva estructura de carpetas  
+- Roadmap ajustado  
+- Arquitectura lista para Pilot‑in‑a‑Box  
+
+Listo para copiar y pegar.
+
+---
 
 # 📄 **ARCHITECTURE.md**  
-*Arquitectura técnica de MASS Simple y lineamientos para evolución hacia Pilot‑in‑a‑Box*
+*Arquitectura técnica de MASS Simple + MASS Enterprise y lineamientos hacia Pilot‑in‑a‑Box*
 
 ---
 
-# # 1. Visión General
+# 1. Visión General
 
-MASS Simple es un backend FastAPI modular, reproducible y orientado a convertirse en la base del **Pilot‑in‑a‑Box**: un sistema read‑only, auditable y listo para integrarse con BioCore y con un dashboard profesional.
+El backend MASS ahora implementa **dos pipelines coexistentes**:
 
-La arquitectura actual prioriza:
+- **MASS Simple** → payload libre, normalización flexible, ideal para ingesta rápida  
+- **MASS Enterprise v1.1 (parcial)** → contrato formal, trazabilidad completa, estructura estandarizada  
 
-- **Simplicidad**  
-- **Reproducibilidad**  
-- **Aislamiento de responsabilidades**  
-- **Escalabilidad futura**  
-- **Compatibilidad con estándares enterprise**  
+Ambos conviven en un backend FastAPI modular, reproducible y preparado para evolucionar hacia el **Pilot‑in‑a‑Box**, un sistema auditable, observable y listo para integrarse con BioCore.
 
-Este documento describe la arquitectura actual y los lineamientos para su evolución.
+La arquitectura prioriza:
+
+- Simplicidad  
+- Reproducibilidad  
+- Aislamiento de responsabilidades  
+- Escalabilidad  
+- Compatibilidad con estándares enterprise  
 
 ---
 
-# # 2. Componentes Principales
+# 2. Componentes Principales
 
 ```
-MASS Simple
+MASS Backend
 │
-├── Backend (FastAPI)
-│   ├── API Layer (routes)
-│   ├── Services Layer
-│   ├── Models (SQLAlchemy)
-│   ├── Schemas (Pydantic)
-│   ├── Core (config, security, validators)
-│   ├── DB (session, base)
-│   ├── Migrations (Alembic)
-│   └── Tests
+├── API Layer (FastAPI)
+│   ├── MASS Simple → POST /mass
+│   ├── MASS Enterprise → POST /mass/generate
+│   └── GET /mass/{id}
 │
-├── Database (Postgres)
+├── Services
+│   ├── Normalización Simple
+│   ├── Normalización Enterprise
+│   └── Autenticación
 │
-└── Infrastructure
+├── Models (SQLAlchemy)
+│   └── MassRequest
+│
+├── Schemas (Pydantic)
+│   ├── MassSimplePayload
+│   ├── MassPayload (Enterprise)
+│   └── MassRequestBase
+│
+├── Core
+│   ├── Config
+│   ├── Security (JWT)
+│   └── Validators (futuro)
+│
+├── DB Layer
+│   ├── Session
+│   ├── Base
+│   └── Alembic
+│
+└── Infraestructura
     ├── Docker Compose
-    ├── Environment Variables
-    └── Future: Helm Chart (K8s)
+    └── Variables de entorno
 ```
 
 ---
 
-# # 3. Backend Architecture (FastAPI)
+# 3. Backend Architecture (FastAPI)
 
-El backend sigue una arquitectura **clean modular**, separando:
+El backend sigue una arquitectura **clean modular**, con capas bien definidas.
 
-### ✔ **API Layer**
-Ubicada en `api/routes/`.
-
+## ✔ API Layer (`routes/`)
 Responsabilidades:
 - Definir endpoints
-- Validar entrada vía schemas
-- Delegar lógica a servicios
-- Manejar códigos HTTP
+- Validar entrada con schemas
+- Delegar a servicios
+- Manejar errores HTTP
 
-### ✔ **Services Layer**
-Ubicada en `services/`.
+Endpoints actuales:
 
+| Endpoint | Tipo | Descripción |
+|---------|------|-------------|
+| `POST /mass` | MASS Simple | Ingesta flexible con normalización automática |
+| `POST /mass/generate` | MASS Enterprise | Ingesta formal con contrato v1.1 |
+| `GET /mass/{id}` | Común | Recuperación de requests |
+
+---
+
+## ✔ Services Layer (`services/`)
 Responsabilidades:
 - Lógica de negocio
-- Orquestación de modelos
+- Normalización
 - Validaciones adicionales
-- Manejo de errores de dominio
+- Orquestación de modelos
 
-Ejemplo:  
-- `auth_service.py`  
-- `mass_service.py` (pendiente)
+Servicios actuales:
 
-### ✔ **Models (SQLAlchemy)**
-Ubicados en `models/`.
+- `mass_normalizer_simple.py`
+- `mass_normalizer.py` (Enterprise)
+- `auth_service.py`
 
-Responsabilidades:
-- Definir tablas
-- Relaciones
-- Constraints
+---
 
-### ✔ **Schemas (Pydantic)**
-Ubicados en `schemas/`.
+## ✔ Models (`models/`)
+Modelo único:
 
-Responsabilidades:
-- Validación de entrada/salida
-- Serialización
-- Tipado estricto
+### `MassRequest`
+- `id`
+- `user_id`
+- `schema_version`
+- `correlation_id`
+- `idempotency_key`
+- `payload_json`
+- `created_at`
 
-### ✔ **Core**
-Ubicado en `core/`.
+---
 
+## ✔ Schemas (`schemas/`)
+
+### MASS Simple
+```python
+class MassSimplePayload:
+    payload: Dict[str, Any]
+```
+
+### MASS Enterprise
+```python
+class MassPayload:
+    schema_version
+    correlation_id
+    trace
+    request
+    payload
+```
+
+### Base de lectura
+```python
+class MassRequestBase
+```
+
+---
+
+## ✔ Core (`core/`)
 Incluye:
-- `config.py` → carga de variables de entorno  
-- `security.py` → JWT, hashing, autenticación  
-- `validators/` → validación de payloads MASS  
 
-### ✔ **DB Layer**
-Ubicada en `db/`.
+- Configuración
+- Seguridad (JWT)
+- Validadores futuros
+- Middlewares futuros
 
-Incluye:
+---
+
+## ✔ DB Layer (`db/`)
 - `session.py` → SessionLocal  
-- `base.py` → Base declarativa  
+- `base.py` → Declarative Base  
 - Alembic para migraciones  
 
 ---
 
-# # 4. Flujo de Datos
+# 4. Flujo de Datos
 
-### 1. Request del usuario  
-→ pasa por autenticación (JWT + HTTPBearer)
+## MASS Simple (`POST /mass`)
 
-### 2. API Layer  
-→ valida entrada con schemas  
-→ delega a servicios
+```
+Cliente
+ → API Layer (MassSimplePayload)
+ → Normalizador Simple
+ → Generación automática de metadata Enterprise
+ → Persistencia en MassRequest
+ → Respuesta con IDs y payload normalizado
+```
 
-### 3. Services Layer  
-→ ejecuta lógica  
-→ interactúa con modelos  
-→ aplica validaciones adicionales
+## MASS Enterprise (`POST /mass/generate`)
 
-### 4. DB Layer  
-→ persiste o consulta datos
+```
+Cliente
+ → API Layer (MassPayload)
+ → Normalizador Enterprise
+ → Persistencia en MassRequest
+ → Respuesta con metadata Enterprise
+```
 
-### 5. API Layer  
-→ serializa respuesta  
-→ retorna JSON
+## Recuperación (`GET /mass/{id}`)
+
+```
+Cliente → API → DB → JSON
+```
 
 ---
 
-# # 5. Seguridad
+# 5. Seguridad
 
 ### Estado actual
-- JWT funcional  
-- OAuth2PasswordBearer aún presente  
-- HTTPBearer pendiente  
-- Roles mínimos no implementados  
-- CORS no configurado  
-- Rate limiting no implementado  
+- JWT funcional
+- Autenticación obligatoria
+- Roles no implementados
+- CORS no configurado
 
-### Estado objetivo
-- Autenticación: **HTTPBearer + JWT**  
-- Autorización: **roles (admin/viewer)**  
-- Secrets: **solo por env vars**  
-- CORS: **restrictivo**  
-- Rate limiting: **nivel API Gateway o middleware**  
+### Objetivo
+- HTTPBearer + JWT
+- Roles (admin/viewer)
+- CORS restrictivo
+- Rate limiting (middleware o API Gateway)
 
 ---
 
-# # 6. Pipeline de Datos MASS
+# 6. Pipeline MASS
 
 ### Estado actual
-- Ingesta parcial  
-- Validación incompleta  
-- Normalización no documentada  
-- Tests mínimos  
+- MASS Simple completo
+- MASS Enterprise v1.1 parcialmente implementado
+- Normalizadores separados
+- Persistencia unificada
 
-### Estado objetivo
-- Validación estricta (schemas + validators)  
-- Normalización reproducible  
-- Versionado de datasets  
-- Manejo de errores estandarizado  
-- Tests completos  
-
----
-
-# # 7. Observabilidad (Objetivo Pilot‑in‑a‑Box)
-
-### Estado actual
-No implementado.
-
-### Estado objetivo
-- OpenTelemetry (traces + metrics + logs)  
-- Propagación de contexto  
-- Logs estructurados (JSON)  
-- Collector local  
-- Dashboards base (Grafana opcional)  
+### Objetivo
+- Validación estricta Enterprise
+- Versionado de payloads
+- Manejo de errores estandarizado
+- Tests completos
 
 ---
 
-# # 8. Audit Trail (Objetivo Pilot‑in‑a‑Box)
+# 7. Observabilidad (Objetivo Pilot‑in‑a‑Box)
 
 ### Estado actual
 No implementado.
 
-### Estado objetivo
-Registrar por cada operación:
-- timestamp  
-- inputs  
-- outputs  
-- versión dataset  
-- versión BioCore  
-- commit hash  
-- trace_id/span_id  
-
-Con:
-- Panel de auditoría  
-- Export CSV/PDF  
+### Objetivo
+- OpenTelemetry
+- Logs estructurados
+- Métricas
+- Dashboards (Grafana opcional)
 
 ---
 
-# # 9. Integración BioCore
+# 8. Audit Trail
 
 ### Estado actual
 No implementado.
 
-### Estado objetivo
+### Objetivo
+Registrar:
+- Inputs
+- Outputs
+- Timestamps
+- trace_id/span_id
+- Versión de dataset
+- Versión de BioCore
+- Commit hash
+
+---
+
+# 9. Integración BioCore
+
+### Estado actual
+No implementado.
+
+### Objetivo
 Cliente robusto:
-- Timeouts  
-- Retries exponenciales  
-- Circuit breaker  
-- Cache control  
+- Retries
+- Timeouts
+- Circuit breaker
+- Cache control
 
 Endpoints esperados:
-- `/recommend`  
-- `/health`  
-- `/version`  
-
-Dashboard debe mostrar:
-- recomendaciones  
-- impacto estimado  
-- explicación high-level  
+- `/recommend`
+- `/health`
+- `/version`
 
 ---
 
-# # 10. Frontend (Next.js)
+# 10. Frontend (Next.js)
 
 ### Estado actual
 No existe.
 
-### Estado objetivo
-Dashboard profesional con:
-- KPIs  
-- Tendencias  
-- Before/after  
-- Filtros  
-- Export CSV/PDF  
-- Recomendaciones BioCore  
+### Objetivo
+Dashboard con:
+- KPIs
+- Tendencias
+- Before/after
+- Export CSV/PDF
+- Recomendaciones BioCore
 
 ---
 
-# # 11. Infraestructura
+# 11. Infraestructura
 
 ### Docker Compose (actual)
-- Backend  
-- Postgres  
-- Reproducible  
-- Determinístico  
+- Backend
+- Postgres
+- Reproducible
 
 ### Helm Chart (objetivo)
-- Single namespace  
-- Values por entorno  
-- TLS/HTTPS  
-- Password-protection  
-- Script de actualización  
-- Notas de rollback  
+- TLS
+- Password-protection
+- Values por entorno
+- Rollbacks
 
 ---
 
-# # 12. Roadmap Arquitectónico
+# 12. Roadmap Arquitectónico
 
-1. **Cerrar backend (seguridad + validación + servicios)**  
-2. **Construir dashboard Next.js**  
-3. **Implementar M&V**  
-4. **Agregar observabilidad**  
-5. **Agregar audit trail**  
-6. **Integrar BioCore**  
-7. **Crear Helm chart + deploy cloud**  
+1. Cerrar backend (validación + seguridad + servicios)
+2. Construir dashboard Next.js
+3. Implementar M&V
+4. Agregar observabilidad
+5. Agregar audit trail
+6. Integrar BioCore
+7. Crear Helm chart + deploy cloud
 
 ---
 
-# # 13. Conclusión
+# 13. Conclusión
 
-La arquitectura de MASS Simple es sólida, limpia y lista para escalar.  
-El backend ya está estable y reproducible; ahora el foco es:
-
-- seguridad  
-- pipeline de datos  
-- dashboard  
-- M&V  
-- observabilidad  
-- audit trail  
-- BioCore  
-- deploy cloud  
-
-Con estos elementos, MASS Simple se convierte en un **Pilot‑in‑a‑Box real**, apto para PoCs con hyperscalers.
+La arquitectura MASS actual es sólida, limpia y preparada para escalar hacia un **Pilot‑in‑a‑Box real**, con MASS Simple y MASS Enterprise conviviendo sin conflicto y una base técnica lista para observabilidad, M&V, audit trail y BioCore.
 
 ---
