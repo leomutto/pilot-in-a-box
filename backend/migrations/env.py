@@ -24,7 +24,7 @@ if config.config_file_name is not None:
 # Importar Base y modelos MASS simple
 # ---------------------------------------------------------
 from db.base import Base
-from models.mass import MassRequest  # noqa: F401
+from models.mass_request import MassRequest  # noqa: F401
 
 target_metadata = Base.metadata
 

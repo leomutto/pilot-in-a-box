@@ -1,1 +1,1 @@
-from .mass import MassRequest
+from .mass_request import MassRequest

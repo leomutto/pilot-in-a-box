@@ -13,8 +13,8 @@ from argon2 import PasswordHasher
 
 
 # revision identifiers, used by Alembic.
-revision: str = '923738512075'
-down_revision: Union[str, Sequence[str], None] = '1facca6dc8e8'
+revision: str = "923738512075"
+down_revision: Union[str, Sequence[str], None] = "1facca6dc8e8"
 branch_labels: Union[str, Sequence[str], None] = None
 depends_on: Union[str, Sequence[str], None] = None
 
@@ -28,18 +28,21 @@ def upgrade() -> None:
         sa.Column("id", sa.Integer, primary_key=True),
         sa.Column("email", sa.String, nullable=False, unique=True),
         sa.Column("hashed_password", sa.String, nullable=False),
-        sa.Column("created_at", sa.DateTime(timezone=True), server_default=sa.func.now()),
+        sa.Column(
+            "created_at",
+            sa.DateTime(timezone=True),
+            server_default=sa.func.now(),
+        ),
     )
 
     # Crear usuario seed
     ph = PasswordHasher()
     hashed = ph.hash("Tremendo1#")
 
+    # Alembic solo acepta SQL literal en op.execute()
     op.execute(
-        sa.text(
-            "INSERT INTO users (email, hashed_password) VALUES (:email, :pwd)"
-        ),
-        {"email": "ldmutto@gmail.com", "pwd": hashed},
+        f"INSERT INTO users (email, hashed_password) "
+        f"VALUES ('ldmutto@gmail.com', '{hashed}')"
     )
 
 
